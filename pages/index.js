@@ -1,34 +1,8 @@
 import { Box, Button, Text, TextField, Image } from '@skynexui/components';
 import appConfig from '../config.json';
-function GlobalStyle() {
-  return (
-    <style global jsx>{`
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-        list-style: none;
-      }
-      body {
-        font-family: 'Open Sans', sans-serif;
-      }
-      /* App fit Height */
-      html,
-      body,
-      #__next {
-        min-height: 100vh;
-        display: flex;
-        flex: 1;
-      }
-      #__next {
-        flex: 1;
-      }
-      #__next > * {
-        flex: 1;
-      }
-    `}</style>
-  );
-}
+import React from 'react';
+import { useRouter } from 'next/router';
+
 function Titulo(props) {
   const Tag = props.tag;
   return (
@@ -58,11 +32,11 @@ function Titulo(props) {
 export default HomePage; */
 
 export default function PaginaInicial() {
-  const username = 'Adrianodisam';
+  const [input, setInput] = React.useState('Adrianodisam');
+  const roteamento = useRouter();
 
   return (
     <>
-      <GlobalStyle />
       <Box
         styleSheet={{
           display: 'flex',
@@ -96,6 +70,10 @@ export default function PaginaInicial() {
         >
           {/* Formulário */}
           <Box
+            onSubmit={(infosEvento) => {
+              infosEvento.preventDefault();
+              roteamento.push('/chat');
+            }}
             as="form"
             styleSheet={{
               display: 'flex',
@@ -115,10 +93,11 @@ export default function PaginaInicial() {
                 color: appConfig.theme.colors.neutrals[300],
               }}
             >
-              {appConfig.name}
+              Aluracord - Matrix ({input})
             </Text>
 
             <TextField
+              value={input}
               fullWidth
               textFieldColors={{
                 neutral: {
@@ -127,6 +106,9 @@ export default function PaginaInicial() {
                   mainColorHighlight: appConfig.theme.colors.primary[200],
                   backgroundColor: appConfig.theme.colors.neutrals[600],
                 },
+              }}
+              onChange={({ target }) => {
+                setInput(target.value);
               }}
             />
             <Button
@@ -164,8 +146,9 @@ export default function PaginaInicial() {
                 borderRadius: '50%',
                 marginBottom: '16px',
               }}
-              src={`https://github.com/${username}.png`}
+              src={`https://github.com/${input}.png`}
             />
+
             <Text
               variant="body4"
               styleSheet={{
@@ -175,7 +158,7 @@ export default function PaginaInicial() {
                 borderRadius: '1000px',
               }}
             >
-              {username}
+              {input}
             </Text>
           </Box>
           {/* Photo Area */}
