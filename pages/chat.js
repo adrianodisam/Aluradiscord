@@ -1,19 +1,40 @@
 import { Box, Text, TextField, Image, Button } from '@skynexui/components';
 import React from 'react';
 import appConfig from '../config.json';
+import { createClient } from '@supabase/supabase-js';
+const SUPABASE_ANON_KEY =
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlhdCI6MTY0MzY1ODMzNCwiZXhwIjoxOTU5MjM0MzM0fQ.FnN8bvy8qU2dT3NGDzk3JXxvhZoKo1Qr886jgf-RLSU';
+const SUPABASE_URL = 'https://krnkenzdoqftoaowuhjk.supabase.co';
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 export default function ChatPage() {
   const [mensagem, setMensagem] = React.useState('');
   const [listaMensagem, setListamensagem] = React.useState([]);
+  React.useEffect(() => {
+    supabase
+      .from('mensagens')
+      .select('*')
+      .order('id', { ascending: false })
+      .then(({ data }) => {
+        console.log(data);
+        setListamensagem(data);
+      });
+  }, []);
 
   // Sua lógica vai aqui
   function handleNovaMensagem(novaMensagem) {
     const mensagem = {
-      id: listaMensagem.length + 1,
+      /*   id: listaMensagem.length + 1, */
       de: 'adrianodisam',
       texto: novaMensagem,
     };
-    setListamensagem([mensagem, ...listaMensagem]);
+    supabase
+      .from('mensagens')
+      .insert([mensagem])
+      .then(({ data }) => {
+        setListamensagem([data[0], ...listaMensagem]);
+      });
+
     setMensagem('');
   }
 
@@ -130,9 +151,6 @@ function Header() {
 }
 
 function MessageList(props) {
-  function apagar(id) {
-    console.log('apagou');
-  }
   return (
     <Box
       tag="ul"
@@ -186,21 +204,20 @@ function MessageList(props) {
                 {new Date().toLocaleDateString()}
               </Text>
             </Box>
-            mensagem:{texto}
+            {texto}
             <Box
               styleSheet={{
                 position: 'relative',
-                width: '100px',
+                width: '100%',
                 overflow: 'hidden',
                 display: 'flex',
                 padding: '6px',
-                left: '900px',
                 borderRadius: '10px',
                 marginTop: '6px',
-                justifyContent: 'center',
+                justifyContent: 'right',
+                alignItems: 'center',
                 color: appConfig.theme.colors.neutrals[300],
               }}
-              onClick={apagar(id)}
             >
               X
             </Box>
