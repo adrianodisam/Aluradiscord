@@ -8,49 +8,49 @@ import { ButtonSendSticker } from '../src/componentes/ButtonSendSticker';
 const SUPABASE_ANON_KEY =
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlhdCI6MTY0MzY1ODMzNCwiZXhwIjoxOTU5MjM0MzM0fQ.FnN8bvy8qU2dT3NGDzk3JXxvhZoKo1Qr886jgf-RLSU';
 const SUPABASE_URL = 'https://krnkenzdoqftoaowuhjk.supabase.co';
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 export default function ChatPage() {
   const [mensagem, setMensagem] = React.useState('');
   const roteamento = useRouter();
   const usuarioLogado = roteamento.query.username;
-  console.log(usuarioLogado);
-  const [listaMensagem, setListamensagem] = React.useState([
-    /* {
-      id: 1,
-      texto:
-        ':sticker: https://www.alura.com.br/imersao-react-4/assets/figurinhas/Figurinha_30.png',
-      de: 'adrianodisam',
-    },
-    {
-      id: 2,
-      texto: 'como vai',
-      de: 'alura',
-    }, */
-  ]);
+  const [listaMensagem, setListamensagem] = React.useState([]);
+
+  function msgTempoReal(adicionaMensagem) {
+    return supabaseClient
+      .from('mensagens')
+      .on('INSERT', (respostaLive) => {
+        adicionaMensagem(respostaLive.new);
+      })
+      .subscribe();
+  }
   React.useEffect(() => {
-    supabase
+    supabaseClient
       .from('mensagens')
       .select('*')
       .order('id', { ascending: false })
       .then(({ data }) => {
-        console.log(data);
         setListamensagem(data);
       });
+  }, []);
+  React.useEffect(() => {
+    msgTempoReal((novaMensagem) => {
+      console.log('nova mensagem', novaMensagem);
+      setListamensagem(() => [novaMensagem, ...listaMensagem]);
+    });
   }, []);
 
   // Sua lógica vai aqui
   function handleNovaMensagem(novaMensagem) {
     const mensagem = {
-      /*   id: listaMensagem.length + 1, */
       de: usuarioLogado,
       texto: novaMensagem,
     };
-    supabase
+    supabaseClient
       .from('mensagens')
       .insert([mensagem])
       .then(({ data }) => {
-        setListamensagem([data[0], ...listaMensagem]);
+        console.log('criando mensagen', data);
       });
 
     setMensagem('');
