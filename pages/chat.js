@@ -2,6 +2,9 @@ import { Box, Text, TextField, Image, Button } from '@skynexui/components';
 import React from 'react';
 import appConfig from '../config.json';
 import { createClient } from '@supabase/supabase-js';
+import { useRouter } from 'next/router';
+import { ButtonSendSticker } from '../src/componentes/ButtonSendSticker';
+
 const SUPABASE_ANON_KEY =
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlhdCI6MTY0MzY1ODMzNCwiZXhwIjoxOTU5MjM0MzM0fQ.FnN8bvy8qU2dT3NGDzk3JXxvhZoKo1Qr886jgf-RLSU';
 const SUPABASE_URL = 'https://krnkenzdoqftoaowuhjk.supabase.co';
@@ -9,7 +12,22 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 export default function ChatPage() {
   const [mensagem, setMensagem] = React.useState('');
-  const [listaMensagem, setListamensagem] = React.useState([]);
+  const roteamento = useRouter();
+  const usuarioLogado = roteamento.query.username;
+  console.log(usuarioLogado);
+  const [listaMensagem, setListamensagem] = React.useState([
+    /* {
+      id: 1,
+      texto:
+        ':sticker: https://www.alura.com.br/imersao-react-4/assets/figurinhas/Figurinha_30.png',
+      de: 'adrianodisam',
+    },
+    {
+      id: 2,
+      texto: 'como vai',
+      de: 'alura',
+    }, */
+  ]);
   React.useEffect(() => {
     supabase
       .from('mensagens')
@@ -25,7 +43,7 @@ export default function ChatPage() {
   function handleNovaMensagem(novaMensagem) {
     const mensagem = {
       /*   id: listaMensagem.length + 1, */
-      de: 'adrianodisam',
+      de: usuarioLogado,
       texto: novaMensagem,
     };
     supabase
@@ -119,6 +137,12 @@ export default function ChatPage() {
                 color: appConfig.theme.colors.neutrals[200],
               }}
             />
+            <ButtonSendSticker
+              onStickerClick={(sticker) => {
+                console.log('[usando o componente]salva este sticker', sticker);
+                handleNovaMensagem(':sticker:' + sticker);
+              }}
+            />
           </Box>
         </Box>
       </Box>
@@ -163,7 +187,7 @@ function MessageList(props) {
         marginBottom: '16px',
       }}
     >
-      {props.mensagens.map(({ id, texto }) => {
+      {props.mensagens.map(({ id, texto, de }) => {
         return (
           <Text
             key={id}
@@ -190,7 +214,7 @@ function MessageList(props) {
                   display: 'inline-block',
                   marginRight: '8px',
                 }}
-                src={`https://github.com/adrianodisam.png`}
+                src={`https://github.com/${de}.png`}
               />
               <Text tag="strong"></Text>
               <Text
@@ -201,10 +225,25 @@ function MessageList(props) {
                 }}
                 tag="span"
               >
-                {new Date().toLocaleDateString()}
+                {new Date().toLocaleDateString()}{' '}
               </Text>
             </Box>
-            {texto}
+
+            {texto.startsWith(':sticker:') ? (
+              <Image
+                styleSheet={{
+                  maxWidth: '100px',
+                  height: '100px',
+
+                  display: 'inline-block',
+                  marginRight: '8px',
+                }}
+                src={texto.replace(':sticker:', '')}
+              />
+            ) : (
+              texto
+            )}
+            {/*         {texto} */}
             <Box
               styleSheet={{
                 position: 'relative',
